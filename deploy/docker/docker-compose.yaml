@@ -111,8 +111,8 @@ services:
     !!merge <<: *db-depend
     image: signoz/signoz:${VERSION:-v0.117.1}
     container_name: signoz
-    ports:
-      - "8080:8080" # signoz port
+    # ports:
+      #   - "8080:8080" # signoz port
     volumes:
       - sqlite:/var/lib/signoz/
     environment:
@@ -134,6 +134,9 @@ services:
     !!merge <<: *db-depend
     image: signoz/signoz-otel-collector:${OTELCOL_TAG:-v0.144.2}
     container_name: signoz-otel-collector
+    networks:
+      - signoz-net
+      - external-net
     entrypoint:
       - /bin/sh
     command:
@@ -151,10 +154,10 @@ services:
       - SIGNOZ_OTEL_COLLECTOR_CLICKHOUSE_CLUSTER=cluster
       - SIGNOZ_OTEL_COLLECTOR_CLICKHOUSE_REPLICATION=true
       - SIGNOZ_OTEL_COLLECTOR_TIMEOUT=10m
-    ports:
-      # - "1777:1777"     # pprof extension
-      - "4317:4317" # OTLP gRPC receiver
-      - "4318:4318" # OTLP HTTP receiver
+    # ports:
+      #   - "1777:1777"     # pprof extension
+      #   - "4317:4317" # OTLP gRPC receiver
+      #   - "4318:4318" # OTLP HTTP receiver
   signoz-telemetrystore-migrator:
     !!merge <<: *db-depend
     image: signoz/signoz-otel-collector:${OTELCOL_TAG:-v0.144.2}
@@ -176,6 +179,9 @@ services:
 networks:
   signoz-net:
     name: signoz-net
+  external-net:
+    name: ${EXTERNAL_NETWORK:-prode}
+    external: true
 volumes:
   clickhouse:
     name: signoz-clickhouse
